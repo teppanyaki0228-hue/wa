@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TVアニメ『MY HERO ACADEMY』風サイト</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'hero-yellow': '#f9c901',
+                        'hero-red': '#e60012',
+                        'hero-black': '#1a1a1a',
+                        'deku-green': '#0f7173',
+                        'bakugo-orange': '#f39c12',
+                        'shoto-blue': '#3498db',
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans JP"', 'sans-serif'],
+                        display: ['"Oswald"', 'sans-serif'],
+                    },
+                    skew: {
+                        '12': '12deg',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* カスタムスタイルとアニメーション */
+        body {
+            background-color: #f4f4f4;
+            overflow-x: hidden;
+        }
+
+        /* ハーフトーン（ドット）パターン背景 */
+        .bg-halftone {
+            background-image: radial-gradient(#1a1a1a 15%, transparent 16%), radial-gradient(#1a1a1a 15%, transparent 16%);
+            background-size: 10px 10px;
+            background-position: 0 0, 5px 5px;
+            opacity: 0.1;
+        }
+
+        /* アメコミ風テキスト */
+        .comic-text {
+            text-shadow: 3px 3px 0px #000;
+        }
+        
+        .comic-text-white {
+            text-shadow: 3px 3px 0px #fff;
+        }
+
+        /* ヒーローセクションの斜め背景 */
+        .hero-clip {
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+        }
+
+        /* ボタンホバーエフェクト */
+        .btn-plus-ultra {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-plus-ultra::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.2);
+            transform: skewX(-20deg);
+            transition: all 0.3s ease;
+        }
+        .btn-plus-ultra:hover::after {
+            left: 100%;
+        }
+        .btn-plus-ultra:hover {
+            transform: scale(1.05) rotate(-2deg);
+            box-shadow: 5px 5px 0px #000;
+        }
+
+        /* スクロールアニメーション用クラス */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* グリッジエフェクト（タイトル用） */
+        .glitch-wrapper {
+            position: relative;
+        }
+        
+        /* ニュースリストのホバー */
+        .news-item {
+            transition: transform 0.2s;
+            border-left: 5px solid transparent;
+        }
+        .news-item:hover {
+            transform: translateX(10px);
+            border-left: 5px solid #e60012;
+            background-color: #fff;
+        }
+
+        /* キャラクターカード */
+        .char-card {
+            transition: transform 0.3s, filter 0.3s;
+        }
+        .char-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+            z-index: 10;
+        }
+
+        /* ローディング画面 */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #f9c901;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+        .loader-text {
+            font-family: 'Oswald', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="font-sans text-hero-black">
+
+    <!-- ローディング画面 -->
+    <div id="loader">
+        <div class="text-center">
+            <h1 class="loader-text comic-text text-white italic">PLUS ULTRA!!</h1>
+            <p class="font-bold mt-2 tracking-widest">LOADING...</p>
+        </div>
+    </div>
+
+    <!-- ナビゲーション -->
+    <nav class="fixed w-full z-50 bg-white border-b-4 border-hero-black shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="#" class="text-3xl font-black italic font-display tracking-tighter text-hero-red">HERO<span class="text-hero-yellow text-shadow-black" style="text-shadow: 1px 1px 0 #000;">ACA</span></a>
+            
+            <!-- デスクトップメニュー -->
+            <ul class="hidden md:flex space-x-8 font-bold italic text-lg">
+                <li><a href="#news" class="hover:text-hero-red transition-colors">1</a></li>
+                <li><a href="#story" class="hover:text-hero-red transition-colors">STORY</a></li>
+                <li><a href="#character" class="hover:text-hero-red transition-colors">CHARACTER</a></li>
+                <li><a href="#movie" class="hover:text-hero-red transition-colors">MOVIE</a></li>
+            </ul>
+
+            <!-- ハンバーガーメニュー -->
+            <button id="menu-btn" class="md:hidden text-2xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- モバイルメニュー -->
+        <div id="mobile-menu" class="hidden md:hidden bg-hero-yellow border-t-2 border-black absolute w-full">
+            <ul class="flex flex-col p-4 font-bold italic text-xl text-center space-y-4">
+                <li><a href="#news" class="block py-2">NEWS</a></li>
+                <li><a href="#story" class="block py-2">STORY</a></li>
+                <li><a href="#character" class="block py-2">CHARACTER</a></li>
+                <li><a href="#movie" class="block py-2">MOVIE</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ヒーローセクション -->
+    <header class="relative w-full h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-hero-yellow hero-clip">
+        <div class="absolute inset-0 bg-halftone"></div>
+        
+        <!-- 背景の装飾的な要素 -->
+        <div class="absolute top-20 right-0 w-2/3 h-full bg-hero-red transform -skew-x-12 opacity-90 border-l-4 border-black"></div>
+        <div class="absolute bottom-0 left-0 w-1/2 h-1/2 bg-white transform skew-y-6 opacity-80 border-t-4 border-black"></div>
+
+        <div class="container mx-auto px-4 relative z-10 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 text-center md:text-left mb-10 md:mb-0 reveal active">
+                <p class="text-xl md:text-2xl font-bold italic mb-2 bg-black text-white inline-block px-2 py-1 transform -skew-x-12">週刊少年ジャンプ連載中！</p>
+                <h1 class="text-6xl md:text-8xl font-black italic font-display leading-none mb-4 comic-text text-white">
+                    GO BEYOND,<br>
+                    <span class="text-hero-yellow text-shadow-black" style="text-shadow: 4px 4px 0 #000;">PLUS ULTRA!</span>
+                </h1>
+                <p class="text-lg md:text-xl font-bold mb-8 bg-white/80 p-4 border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+                    最高のヒーローを目指す物語が、<br>ここから始まる。
+                </p>
+                <a href="#onair" class="btn-plus-ultra inline-block bg-hero-red text-white text-2xl font-black italic px-8 py-4 border-2 border-black shadow-[4px_4px_0px_#000]">
+                    ON AIR INFO <i class="fa-solid fa-caret-right ml-2"></i>
+                </a>
+            </div>
+            
+            <!-- キャラクター画像の代わり（シルエット） -->
+            <div class="md:w-1/2 flex justify-center reveal active" style="transition-delay: 0.2s;">
+                <div class="relative w-80 h-80 md:w-[500px] md:h-[500px] bg-black rounded-full flex items-center justify-center border-4 border-white shadow-[0px_0px_0px_4px_#000]">
+                    <div class="text-center">
+                        <i class="fa-solid fa-bolt text-9xl text-hero-yellow animate-pulse"></i>
+                        <p class="text-white font-bold mt-4 text-2xl">MAIN VISUAL AREA</p>
+                        <p class="text-gray-400 text-sm">(ここにキャラクター画像を配置)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- NEWS セクション -->
+    <section id="news" class="py-20 bg-white relative">
+        <div class="container mx-auto px-4">
+            <div class="flex items-end mb-10 reveal">
+                <h2 class="text-5xl md:text-7xl font-black italic font-display text-hero-black tracking-tighter">NEWS</h2>
+                <span class="ml-4 text-xl font-bold bg-hero-yellow px-2 mb-2 transform -skew-x-12 border border-black">最新情報</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <!-- メインニュース -->
+                <div class="border-4 border-black p-2 shadow-[8px_8px_0px_rgba(230,0,18,1)] reveal">
+                    <div class="w-full h-64 bg-gray-300 flex items-center justify-center mb-4 border-b-2 border-black">
+                        <span class="font-bold text-gray-500">NEWS IMAGE</span>
+                    </div>
+                    <div class="p-2">
+                        <span class="bg-hero-red text-white text-xs font-bold px-2 py-1 mb-2 inline-block">EVENT</span>
+                        <h3 class="text-2xl font-bold mb-2 hover:text-hero-red cursor-pointer">雄英高校ヒーロー科 1年A組 スペシャルイベント開催決定！</h3>
+                        <p class="text-sm text-gray-600 font-bold text-right">2025.12.14</p>
+                    </div>
+                </div>
+
+                <!-- ニュースリスト -->
+                <div class="space-y-4 reveal" style="transition-delay: 0.2s;">
+                    <div class="news-item p-4 border-b-2 border-gray-200 cursor-pointer">
+                        <div class="flex items-center text-sm mb-1">
+                            <span class="font-bold text-gray-400 mr-4">2025.12.10</span>
+                            <span class="bg-hero-black text-white px-2 py-0.5 text-xs font-bold">GOODS</span>
+                        </div>
+                        <p class="font-bold">新コスチュームのフィギュアが登場！予約受付開始</p>
+                    </div>
+                    <div class="news-item p-4 border-b-2 border-gray-200 cursor-pointer">
+                        <div class="flex items-center text-sm mb-1">
+                            <span class="font-bold text-gray-400 mr-4">2025.12.08</span>
+                            <span class="bg-blue-600 text-white px-2 py-0.5 text-xs font-bold">GAME</span>
+                        </div>
+                        <p class="font-bold">スマホアプリ「ヒロアカ・ウルトラランブル」新シーズン開幕</p>
+                    </div>
+                    <div class="news-item p-4 border-b-2 border-gray-200 cursor-pointer">
+                        <div class="flex items-center text-sm mb-1">
+                            <span class="font-bold text-gray-400 mr-4">2025.12.01</span>
+                            <span class="bg-hero-yellow text-black border border-black px-2 py-0.5 text-xs font-bold">MEDIA</span>
+                        </div>
+                        <p class="font-bold">Blu-ray & DVD Vol.5 ジャケットイラスト公開！</p>
+                    </div>
+                    <div class="text-right mt-4">
+                        <a href="#" class="inline-block font-black italic text-lg border-b-4 border-hero-red hover:text-hero-red transition-colors">VIEW MORE <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHARACTER セクション -->
+    <section id="character" class="py-20 bg-hero-black relative overflow-hidden">
+        <!-- 背景装飾 -->
+        <div class="absolute inset-0 bg-halftone opacity-20 bg-white"></div>
+        <div class="absolute -right-20 top-20 text-[200px] font-black text-white opacity-5 select-none font-display italic">HERO</div>
+
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-5xl md:text-7xl font-black italic font-display text-white comic-text-white tracking-tighter mb-4">CHARACTER</h2>
+                <div class="h-2 w-24 bg-hero-yellow mx-auto transform skew-x-12"></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Deku -->
+                <div class="char-card relative group cursor-pointer reveal">
+                    <div class="absolute inset-0 bg-deku-green transform translate-x-2 translate-y-2 border-2 border-white"></div>
+                    <div class="relative bg-gray-800 border-2 border-white h-96 overflow-hidden flex flex-col">
+                        <div class="h-3/4 bg-gray-700 flex items-center justify-center relative overflow-hidden">
+                            <!-- キャラクター画像プレースホルダー -->
+                            <i class="fa-solid fa-user text-6xl text-deku-green opacity-50"></i>
+                            <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent opacity-80"></div>
+                            <span class="absolute bottom-2 left-2 text-4xl font-black italic text-white opacity-20">DEKU</span>
+                        </div>
+                        <div class="h-1/4 bg-white p-3 flex flex-col justify-center relative z-10">
+                            <h3 class="text-xl font-black italic text-deku-green leading-none">IZUKU<br>MIDORIYA</h3>
+                            <p class="text-xs font-bold mt-1">緑谷 出久</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bakugo -->
+                <div class="char-card relative group cursor-pointer reveal" style="transition-delay: 0.1s;">
+                    <div class="absolute inset-0 bg-bakugo-orange transform translate-x-2 translate-y-2 border-2 border-white"></div>
+                    <div class="relative bg-gray-800 border-2 border-white h-96 overflow-hidden flex flex-col">
+                        <div class="h-3/4 bg-gray-700 flex items-center justify-center relative overflow-hidden">
+                            <i class="fa-solid fa-bomb text-6xl text-bakugo-orange opacity-50"></i>
+                            <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent opacity-80"></div>
+                            <span class="absolute bottom-2 left-2 text-4xl font-black italic text-white opacity-20">DYNAMIGHT</span>
+                        </div>
+                        <div class="h-1/4 bg-white p-3 flex flex-col justify-center relative z-10">
+                            <h3 class="text-xl font-black italic text-bakugo-orange leading-none">KATSUKI<br>BAKUGO</h3>
+                            <p class="text-xs font-bold mt-1">爆豪 勝己</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Todoroki -->
+                <div class="char-card relative group cursor-pointer reveal" style="transition-delay: 0.2s;">
+                    <div class="absolute inset-0 bg-shoto-blue transform translate-x-2 translate-y-2 border-2 border-white"></div>
+                    <div class="relative bg-gray-800 border-2 border-white h-96 overflow-hidden flex flex-col">
+                        <div class="h-3/4 bg-gray-700 flex items-center justify-center relative overflow-hidden">
+                            <div class="flex">
+                                <i class="fa-solid fa-fire text-4xl text-red-500 mr-2 opacity-50"></i>
+                                <i class="fa-solid fa-snowflake text-4xl text-blue-300 opacity-50"></i>
+                            </div>
+                            <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent opacity-80"></div>
+                            <span class="absolute bottom-2 left-2 text-4xl font-black italic text-white opacity-20">SHOTO</span>
+                        </div>
+                        <div class="h-1/4 bg-white p-3 flex flex-col justify-center relative z-10">
+                            <h3 class="text-xl font-black italic text-shoto-blue leading-none">SHOTO<br>TODOROKI</h3>
+                            <p class="text-xs font-bold mt-1">轟 焦凍</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Uraraka -->
+                <div class="char-card relative group cursor-pointer reveal" style="transition-delay: 0.3s;">
+                    <div class="absolute inset-0 bg-pink-500 transform translate-x-2 translate-y-2 border-2 border-white"></div>
+                    <div class="relative bg-gray-800 border-2 border-white h-96 overflow-hidden flex flex-col">
+                        <div class="h-3/4 bg-gray-700 flex items-center justify-center relative overflow-hidden">
+                            <i class="fa-solid fa-cloud text-6xl text-pink-400 opacity-50"></i>
+                            <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black to-transparent opacity-80"></div>
+                            <span class="absolute bottom-2 left-2 text-4xl font-black italic text-white opacity-20">URAVITY</span>
+                        </div>
+                        <div class="h-1/4 bg-white p-3 flex flex-col justify-center relative z-10">
+                            <h3 class="text-xl font-black italic text-pink-500 leading-none">OCHACO<br>URARAKA</h3>
+                            <p class="text-xs font-bold mt-1">麗日 お茶子</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="text-center mt-12">
+                 <a href="#" class="btn-plus-ultra inline-block bg-white text-black text-xl font-black italic px-10 py-3 border-4 border-black shadow-[4px_4px_0px_#fff]">
+                    ALL CHARACTERS
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- MOVIE セクション -->
+    <section id="movie" class="py-20 bg-hero-yellow hero-clip transform rotate-1 scale-105 my-10 border-t-4 border-b-4 border-black">
+        <div class="container mx-auto px-4 transform -rotate-1">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-10">
+                <div class="md:w-1/3 text-center md:text-right reveal">
+                    <h2 class="text-6xl font-black italic font-display mb-4 comic-text text-white">MOVIE</h2>
+                    <p class="font-bold text-xl mb-4">最新PV公開中！</p>
+                    <p class="text-sm font-medium">これまでの戦い、そしてこれからの未来。<br>全てが詰まった予告編をチェックせよ。</p>
+                </div>
+                <div class="md:w-2/3 w-full reveal" style="transition-delay: 0.2s;">
+                    <div class="aspect-video bg-black border-4 border-white shadow-[8px_8px_0px_#000] relative flex items-center justify-center group cursor-pointer">
+                        <!-- 動画埋め込みプレースホルダー -->
+                        <div class="absolute inset-0 bg-[url('https://placehold.co/800x450/1a1a1a/FFF?text=Official+Trailer')] bg-cover bg-center opacity-70 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="w-20 h-20 bg-hero-red rounded-full flex items-center justify-center z-10 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-play text-3xl text-white ml-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STORY セクション -->
+    <section id="story" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+             <div class="text-center mb-16 reveal">
+                <h2 class="text-5xl md:text-7xl font-black italic font-display text-hero-black tracking-tighter mb-4">STORY</h2>
+                <p class="text-lg font-bold">イントロダクション</p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row gap-8 items-center reveal">
+                <div class="md:w-1/2 p-6 bg-gray-100 border-l-8 border-hero-red transform skew-x-[-5deg]">
+                    <div class="transform skew-x-[5deg]">
+                        <h3 class="text-2xl font-bold mb-4">「無個性」の少年が最高のヒーローになるまで</h3>
+                        <p class="leading-relaxed font-medium text-gray-800">
+                            超常能力「個性」を持つ人間が当たり前の世界。<br>
+                            憧れのNo.1ヒーロー・オールマイトと出会った“無個性”の少年・緑谷出久、通称「デク」は、その内に秘めるヒーローの資質を見出され、オールマイトから“個性”ワン・フォー・オールを受け継ぐ。<br>
+                            デクはヒーロー輩出の名門・雄英高校に入学し、“個性”で社会や人々を救ける“ヒーロー”になることを目指し、ヒーロー科1年A組のクラスメイトたちと切磋琢磨する毎日を過ごしていた。
+                        </p>
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="h-40 bg-gray-300 border-2 border-black rounded-lg"></div>
+                        <div class="h-40 bg-gray-300 border-2 border-black rounded-lg"></div>
+                        <div class="h-40 bg-gray-300 border-2 border-black rounded-lg"></div>
+                        <div class="h-40 bg-gray-300 border-2 border-black rounded-lg bg-hero-black flex items-center justify-center">
+                            <span class="text-white font-bold italic">More...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="bg-hero-black text-white pt-16 pb-8 border-t-8 border-hero-red">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-10">
+                <div class="text-4xl font-black italic font-display mb-6 md:mb-0">
+                    HERO<span class="text-hero-yellow">ACA</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center hover:bg-hero-red hover:text-white transition-colors text-xl"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center hover:bg-hero-red hover:text-white transition-colors text-xl"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center hover:bg-hero-red hover:text-white transition-colors text-xl"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10 border-b border-gray-700 pb-10 text-sm font-bold text-gray-400">
+                <ul>
+                    <li class="mb-2 text-white">OFFICIAL</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">NEWS</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">ON AIR</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">STAFF/CAST</li>
+                </ul>
+                <ul>
+                    <li class="mb-2 text-white">ARCHIVES</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">STORY</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">CHARACTER</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">MOVIE</li>
+                </ul>
+                <ul>
+                    <li class="mb-2 text-white">GOODS</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">Blu-ray & DVD</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">MUSIC</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">BOOKS</li>
+                </ul>
+                <ul>
+                    <li class="mb-2 text-white">OTHER</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">RADIO</li>
+                    <li class="mb-1 hover:text-hero-yellow cursor-pointer">EVENT</li>
+                </ul>
+            </div>
+            
+            <div class="text-center text-xs text-gray-500 font-bold">
+                <p>&copy; 堀越耕平／集英社・僕のヒーローアカデミア製作委員会</p>
+                <p class="mt-2">本サイトはデモンストレーション用に作成された非公式のファンサイト/ポートフォリオです。</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // ローディングアニメーション
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 500);
+            }, 1500);
+        });
+
+        // モバイルメニューのトグル
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // スクロール時のフェードインアニメーション (Intersection Observer)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target); // 一度表示されたら監視を終了
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
